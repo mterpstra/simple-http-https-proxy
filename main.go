@@ -12,6 +12,7 @@ var host string
 func handler(w http.ResponseWriter, r *http.Request) {
 
 	// Dump the original request to the terminal
+	println("\x1b[31m")
 	println("-- In From Client --------------------------------------------------------------------------")
 	b, _ := httputil.DumpRequest(r, true)
 	println(string(b))
@@ -33,6 +34,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	req.URL.Host = host
 
 	// Dump the new request to the server out to the terminal
+	println("\x1b[33m")
 	println("-- Out to Server ---------------------------------------------------------------------------")
 	b, _ = httputil.DumpRequest(req, true)
 	println(string(b))
@@ -47,11 +49,18 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Dump the server response
+	println("\x1b[35m")
 	println("-- Response from Server --------------------------------------------------------------------")
 	b, _ = httputil.DumpResponse(resp, true)
 	println(string(b))
 	body, err := ioutil.ReadAll(resp.Body)
 	println("--------------------------------------------------------------------------------------------\n\n")
+
+	// Move the headers from the server response to the client response
+	for key, value := range resp.Header {
+		w.Header().Add(key, value[0])
+	}
+	w.WriteHeader(resp.StatusCode)
 
 	// Write the response back to the client
 	w.Write(body)
